@@ -379,13 +379,20 @@ class VMRN(nn.Module):
         return opfc
 
     def _init_modules_resnet(self):
+        def set_all_param_train(m):
+            for p in m.parameters():
+                p.requires_grad = True
         # VMRN layers
         if cfg.VMRN.SHARE_WEIGHTS:
             self.VMRN_rel_top = self.FeatExt.layer4
+            set_all_param_train(self.VMRN_rel_top)
         else:
             self.VMRN_rel_top_o1 = copy.deepcopy(self.FeatExt.layer4)
             self.VMRN_rel_top_o2 = copy.deepcopy(self.FeatExt.layer4)
             self.VMRN_rel_top_union = copy.deepcopy(self.FeatExt.layer4)
+            set_all_param_train(self.VMRN_rel_top_o1)
+            set_all_param_train(self.VMRN_rel_top_o2)
+            set_all_param_train(self.VMRN_rel_top_union)
 
         num_rel = 3 if not self.using_crf else 5
         if cfg.VMRN.RELATION_CLASSIFIER == "UVTransE":

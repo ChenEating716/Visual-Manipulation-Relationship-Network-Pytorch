@@ -372,23 +372,26 @@ def objdet_inference(cls_prob, box_output, im_info, box_prior = None, class_agno
     all_box = [[]]
     if for_vis:
         cls = []
+        all_scores = []
     for j in xrange(1, n_classes):
         if class_agnostic:
             cls_boxes = pred_boxes
         else:
             cls_boxes = pred_boxes[:, j * 4:(j + 1) * 4]
-        cls_dets, cls_scores, _ = box_filter(cls_boxes, scores[:, j], thresh, use_nms = True)
+        cls_dets, cls_scores, keep_inds = box_filter(cls_boxes, scores[:, j], thresh, use_nms = True)
         cls_dets = np.concatenate((cls_dets, np.expand_dims(cls_scores, -1)), axis = -1)
         if for_vis:
+            all_scores.append(scores.cpu().numpy()[keep_inds])
             cls.append(j * np.ones((cls_dets.shape[0], 1)))
         all_box.append(cls_dets)
     if for_vis:
         cls = np.concatenate(cls, axis=0)
         all_box = np.concatenate(all_box[1:], axis=0)
         if with_cls_score:
-            all_box = np.concatenate([all_box, cls], axis = 1)
+            all_scores = np.concatenate(all_scores, axis=0)
+            all_box = np.concatenate([all_box[:, :-1], all_scores, cls], axis = 1)
         else:
-            all_box[:, -1] = cls
+            all_box[:, -1:] = cls
     return all_box
 
 def grasp_inference(cls_prob, box_output, im_info, box_prior = None, topN = False, recover_imscale = True):

@@ -96,7 +96,7 @@ def _get_image_blob(roidb):
     scales.
     """
 
-    # remember: cv2.imread will load picture in the order of BGR
+    # remember: cv2.imread will load pictures in the order of BGR
     im = cv2.imread(roidb['image'])
     im = np.rot90(im, roidb['rotated'])
 
