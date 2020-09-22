@@ -27,14 +27,31 @@ class object_belief(object):
         self.belief = np.array([0.5, 0.5])
 
     def update(self, score, kde):
-        neg_prob = kde[0].comp_prob(score)
-        pos_prob = kde[1].comp_prob(score)
-        self.belief *= [neg_prob, pos_prob]
+        neg_llh = kde[0].comp_prob(score)
+        pos_llh = kde[1].comp_prob(score)
+        # posterior
+        self.belief *= [neg_llh, pos_llh]
         self.belief /= self.belief.sum()
         return self.belief
 
     def reset(self):
         self.belief = np.array([0.5, 0.5])
+
+class relation_belief(object):
+    def __init__(self):
+        self.belief = np.array([0.333, 0.333, 0.334])
+
+    def update(self, score, kde):
+        parent_llh = kde[0].comp_prob(score)
+        child_llh = kde[1].comp_prob(score)
+        norel_llh = kde[2].comp_prob(score)
+        # posterior
+        self.belief *= [parent_llh, child_llh, norel_llh]
+        self.belief /= self.belief.sum()
+        return self.belief
+
+    def reset(self):
+        self.belief = np.array([0.333, 0.333, 0.334])
 
 if __name__=="__main__":
     with open("../../density_esti_train_data.pkl") as f:

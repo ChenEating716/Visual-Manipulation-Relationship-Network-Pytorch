@@ -16,6 +16,7 @@ from model.utils.net_utils import create_mrt
 from sklearn.manifold import TSNE
 import time
 import datetime
+import os
 
 def fig2data(fig):
     """
@@ -366,6 +367,8 @@ def gen_paper_fig(expr, results):
     current_date = datetime.datetime.now()
     image_id = "{}-{}-{}-{}".format(current_date.year, current_date.month, current_date.day,
                                     time.strftime("%H:%M:%S"))
+    if not os.path.exists("images/output/paper_fig/"):
+        os.makedirs("images/output/paper_fig/")
     plt.savefig("images/output/paper_fig/" + image_id + ".png")
 
 if __name__=="__main__":

@@ -606,7 +606,7 @@ def train():
                 rois, cls_prob, bbox_pred, rel_cls_prob, rpn_loss_cls, rpn_loss_box, loss_cls, loss_bbox, rel_loss_cls, reg_loss, rois_label, \
                 grasp_loc, grasp_prob, grasp_bbox_loss,grasp_cls_loss, grasp_conf_label, grasp_all_anchors = Network(data_batch)
                 loss = (rpn_loss_box + rpn_loss_cls + loss_cls + loss_bbox + rel_loss_cls + reg_loss \
-                       + cfg.MGN.OBJECT_GRASP_BALANCE * grasp_bbox_loss + grasp_cls_loss).mean()
+                       + cfg.MGN.OBJECT_GRASP_BALANCE * (grasp_bbox_loss + grasp_cls_loss)).mean()
 
             elif args.frame in {'ssd', 'efc_det'}:
                 bbox_pred, cls_prob, loss_bbox, loss_cls = Network(data_batch)
@@ -620,6 +620,13 @@ def train():
             loss.backward()
             if args.net == "vgg16":
                 clip_gradient(Network, 10.)
+            totalnorm = 0
+            for p in Network.parameters():
+                if p.requires_grad and p.grad is not None:
+                    modulenorm = p.grad.data.norm()
+                    totalnorm += modulenorm ** 2
+            totalnorm = np.sqrt(totalnorm.item())
+            print(totalnorm)
             optimizer.step()
             step += 1
 
